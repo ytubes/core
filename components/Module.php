@@ -11,7 +11,7 @@ class Module extends \yii\base\Module
     /**
      * @var array the loaded module.json info file
      */
-    private $_moduleInfo = null;
+    private $moduleInfo = null;
 
     /**
      * @inheritdoc
@@ -82,8 +82,8 @@ class Module extends \yii\base\Module
      */
     protected function getModuleInfo()
     {
-        if ($this->_moduleInfo != null) {
-            return $this->_moduleInfo;
+        if ($this->moduleInfo !== null) {
+            return $this->moduleInfo;
         }
 
         $moduleJson = file_get_contents($this->getBasePath() . DIRECTORY_SEPARATOR . 'module.json');
