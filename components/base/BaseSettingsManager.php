@@ -15,7 +15,7 @@ abstract class BaseSettingsManager extends \yii\base\Component
     /**
      * @var array|null of loaded settings
      */
-    protected $loaded = null;
+    protected $settings = null;
     /**
      * @var string settings model class name
      */
@@ -26,9 +26,9 @@ abstract class BaseSettingsManager extends \yii\base\Component
      */
     public function init()
     {
-        /*if ($this->moduleId === null) {
+        if ($this->moduleId === null) {
             throw new \Exception('Could not determine module id');
-        }*/
+        }
 
         $this->loadValues();
 
@@ -65,7 +65,7 @@ abstract class BaseSettingsManager extends \yii\base\Component
         }
 
         // Store to runtime
-        $this->loaded[$name] = $value;
+        $this->settings[$name] = $value;
         $this->invalidateCache();
     }
 
@@ -106,7 +106,7 @@ abstract class BaseSettingsManager extends \yii\base\Component
      */
     public function get($name, $default = null)
     {
-        return isset($this->loaded[$name]) ? $this->loaded[$name] : $default;
+        return isset($this->settings[$name]) ? $this->settings[$name] : $default;
     }
 
     /**
@@ -117,9 +117,9 @@ abstract class BaseSettingsManager extends \yii\base\Component
      */
     public function getUncached($name, $default = null)
     {
-        $record = $this->find()->andWhere(['name' => $name])->one();
+        $record = $this->find()->andWhere(['name' => $name])->asArray()->one();
 
-        return ($record !== null) ? $record->value : $default;
+        return ($record !== null) ? $record['value'] : $default;
     }
 
     /**
@@ -135,8 +135,8 @@ abstract class BaseSettingsManager extends \yii\base\Component
             $record->delete();
         }
 
-        if (isset($this->loaded[$name])) {
-            unset($this->loaded[$name]);
+        if (isset($this->settings[$name])) {
+            unset($this->settings[$name]);
         }
 
         $this->invalidateCache();
@@ -147,22 +147,22 @@ abstract class BaseSettingsManager extends \yii\base\Component
      */
     protected function loadValues()
     {
-        //$cached = Yii::$app->cache->get($this->getCacheKey());
+        $cached = Yii::$app->cache->get($this->getCacheKey());
 
-        //if ($cached === false) {
-            $this->loaded = [];
-            $settings = &$this->loaded;
+        if ($cached === false) {
+            $this->settings = [];
+            
+            $records = $this->find()->asArray()->all();
+            if (!empty($records)) {
+                foreach ($records as $record) {
+                    $this->settings[$record['name']] = $record['value'];
+                }
+            }
 
-            array_map(function ($record) use (&$settings) {
-                $settings[$record->name] = $record->value;
-            }, $this->find()->all());
-/*echo '<pre>';
-var_dump($settings);
-echo '</pre>';*/
-           // Yii::$app->cache->set($this->getCacheKey(), $this->loaded);
-        //} else {
-            //$this->loaded = $cached;
-        //}
+            Yii::$app->cache->set($this->getCacheKey(), $this->settings);
+        } else {
+            $this->loaded = $cached;
+        }
     }
 
     /**
@@ -223,5 +223,12 @@ echo '</pre>';*/
         foreach ($this->find()->all() as $setting) {
             $this->delete($setting->name);
         }
+    }
+    
+    public function dump()
+    {
+        echo '<pre>';
+        var_dump($this->loaded);
+        echo '<pre>';
     }
 }
