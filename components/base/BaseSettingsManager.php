@@ -1,8 +1,6 @@
 <?php
 namespace ytubes\components\base;
-
 use Yii;
-
 /**
  * Description of BaseSettingsManager
  */
@@ -20,7 +18,6 @@ abstract class BaseSettingsManager extends \yii\base\Component
      * @var string settings model class name
      */
     public $modelClass = 'ytubes\models\Setting';
-
     /**
      * @inheritdoc
      */
@@ -29,9 +26,7 @@ abstract class BaseSettingsManager extends \yii\base\Component
         if ($this->moduleId === null) {
             throw new \Exception('Could not determine module id');
         }
-
         $this->loadValues();
-
         parent::init();
     }
 
@@ -46,10 +41,13 @@ abstract class BaseSettingsManager extends \yii\base\Component
         if ($value === null) {
             return;
         }
-        // Update database setting record
-        $record = $this->find()->andWhere(['name' => $name])->one();
 
-        if ($record === null) {
+        // Update database setting record
+        $record = $this->find()
+        	->andWhere(['name' => $name])
+        	->one();
+
+        if (!$record instanceof $this->modelClass) {
             $record = $this->createRecord();
             $record->name = $name;
         }
@@ -90,14 +88,11 @@ abstract class BaseSettingsManager extends \yii\base\Component
     public function getJson($name, $default = null)
     {
         $value = $this->get($name, $default);
-
         if(is_string($value)) {
             $value = \yii\helpers\Json::decode($value);
         }
-
         return $value;
     }
-
     /**
      * Returns value of setting
      *
@@ -108,7 +103,6 @@ abstract class BaseSettingsManager extends \yii\base\Component
     {
         return isset($this->settings[$name]) ? $this->settings[$name] : $default;
     }
-
     /**
      * Returns the value of setting without any caching
      *
@@ -117,21 +111,26 @@ abstract class BaseSettingsManager extends \yii\base\Component
      */
     public function getUncached($name, $default = null)
     {
-        $record = $this->find()->andWhere(['name' => $name])->asArray()->one();
+        $record = $this->find()
+        	->andWhere(['name' => $name])
+        	->asArray()
+        	->one();
 
-        return ($record !== null) ? $record['value'] : $default;
+        return (!$record instanceof $this->modelClass) ? $record['value'] : $default;
     }
 
     /**
-     * Deletes setting
+     * Delete one setting row
      *
      * @param string $name
      */
     public function delete($name)
     {
-        $record = $this->find()->andWhere(['name' => $name])->one();
+        $record = $this->find()
+        	->andWhere(['name' => $name])
+        	->one();
 
-        if ($record !== null) {
+        if ($record instanceof $this->modelClass) {
             $record->delete();
         }
 
@@ -151,8 +150,11 @@ abstract class BaseSettingsManager extends \yii\base\Component
 
         if ($cached === false) {
             $this->settings = [];
-            
-            $records = $this->find()->asArray()->all();
+
+            $records = $this->find()
+            	->asArray()
+            	->all();
+
             if (!empty($records)) {
                 foreach ($records as $record) {
                     $this->settings[$record['name']] = $record['value'];
@@ -161,7 +163,7 @@ abstract class BaseSettingsManager extends \yii\base\Component
 
             Yii::$app->cache->set($this->getCacheKey(), $this->settings);
         } else {
-            $this->loaded = $cached;
+            $this->settings = $cached;
         }
     }
 
@@ -199,7 +201,6 @@ abstract class BaseSettingsManager extends \yii\base\Component
     {
         $model = new $this->modelClass;
         $model->module_id = $this->moduleId;
-
         return $model;
     }
 
@@ -211,10 +212,8 @@ abstract class BaseSettingsManager extends \yii\base\Component
     protected function find()
     {
         $modelClass = $this->modelClass;
-
         return $modelClass::find()->andWhere(['module_id' => $this->moduleId]);
     }
-
     /**
      * Deletes all stored settings
      */
@@ -224,11 +223,11 @@ abstract class BaseSettingsManager extends \yii\base\Component
             $this->delete($setting->name);
         }
     }
-    
+
     public function dump()
     {
         echo '<pre>';
-        var_dump($this->loaded);
-        echo '<pre>';
+        var_dump($this->settings);
+        echo '</pre>';
     }
 }
