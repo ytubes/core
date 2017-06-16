@@ -4,9 +4,7 @@ namespace ytubes\components\bootstrap;
 use Yii;
 
 /**
- * ModuleAutoLoader automatically searches for autostart.php files in module folder an executes them.
- *
- * @author luke
+ * ModuleAutoLoader automatically register installed modules.
  */
 class ModuleAutoLoader implements \yii\base\BootstrapInterface
 {
@@ -16,30 +14,28 @@ class ModuleAutoLoader implements \yii\base\BootstrapInterface
     {
         $modules = Yii::$app->cache->get(self::CACHE_ID);
         if ($modules === false) {
-            $modules = [];
+			$all_modules = Yii::$app->getModules();
+			$modules = [];
 
-            foreach (Yii::$app->params['moduleAutoloadPaths'] as $modulePath) {
-                $modulePath = Yii::getAlias($modulePath);
+			foreach ($all_modules as $key => $module) {
+				if (in_array($key, ['gii', 'debug'])) {
+					continue;
+				}
 
-                foreach (scandir($modulePath) as $moduleId) {
-                    if ($moduleId == '.' || $moduleId == '..')
-                        continue;
+	            $moduleDir = Yii::$app->getModule($key)->getBasePath();
 
-                    $moduleDir = $modulePath . DIRECTORY_SEPARATOR . $moduleId;
-
-                    if (is_dir($moduleDir) && is_file($moduleDir . DIRECTORY_SEPARATOR . 'config.php')) {
-                        try {
-                            $modules[$moduleDir] = require($moduleDir . DIRECTORY_SEPARATOR . 'config.php');
-                        } catch (\Exception $ex) {
-                        }
-                    }
-                }
-            }
-
+	            if (is_dir($moduleDir) && is_file($moduleDir . DIRECTORY_SEPARATOR . 'config.php')) {
+	                try {
+	                    $modules[$moduleDir] = require($moduleDir . DIRECTORY_SEPARATOR . 'config.php');
+	                } catch (\Exception $ex) {
+	                }
+	            }
+			}
             if (!YII_DEBUG) {
                 Yii::$app->cache->set(self::CACHE_ID, $modules);
             }
         }
-        Yii::$app->moduleManager->registerBulk($modules);
+
+		Yii::$app->moduleManager->registerBulk($modules);
     }
 }
