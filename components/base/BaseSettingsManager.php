@@ -1,5 +1,6 @@
 <?php
 namespace ytubes\components\base;
+
 use Yii;
 /**
  * Description of BaseSettingsManager
@@ -17,7 +18,7 @@ abstract class BaseSettingsManager extends \yii\base\Component
     /**
      * @var string settings model class name
      */
-    public $modelClass = 'ytubes\models\Setting';
+    public $modelClass = 'backend\models\Setting';
     /**
      * @inheritdoc
      */
@@ -93,6 +94,7 @@ abstract class BaseSettingsManager extends \yii\base\Component
         }
         return $value;
     }
+
     /**
      * Returns value of setting
      *
@@ -103,6 +105,11 @@ abstract class BaseSettingsManager extends \yii\base\Component
     {
         return isset($this->settings[$name]) ? $this->settings[$name] : $default;
     }
+
+	public function getAll()
+	{
+		return $this->settings;
+	}
     /**
      * Returns the value of setting without any caching
      *
