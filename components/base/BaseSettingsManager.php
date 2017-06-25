@@ -18,7 +18,7 @@ abstract class BaseSettingsManager extends \yii\base\Component
     /**
      * @var string settings model class name
      */
-    public $modelClass = 'backend\models\Setting';
+    public $modelClass = 'ytubes\models\Setting';
     /**
      * @inheritdoc
      */
