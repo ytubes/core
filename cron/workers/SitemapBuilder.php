@@ -17,26 +17,27 @@ class SitemapBuilder extends \yii\base\Object
 {
     private $urlManager;
     private $index;
-    private $siteUrl;
+    private $baseSitemapUrl;
     private $baseDirectory;
 
     public function __construct($config = [])
     {
         parent::__construct($config);
 
-		$this->siteUrl = Yii::$app->settings->get('site_url') . '/sitemap/';
-		$this->baseDirectory = Yii::getAlias('@frontend/web/sitemap');
+        $this->baseSitemapUrl = Yii::$app->settings->get('site_url') . '/sitemap/';
+        $this->baseDirectory = Yii::getAlias('@frontend/web/sitemap');
 
-		if (!is_dir($this->baseDirectory)) {
-			FileHelper::CreateDirectory($this->baseDirectory, 0755);
-		}
+        if (!is_dir($this->baseDirectory)) {
+            FileHelper::CreateDirectory($this->baseDirectory, 0755);
+        }
 
-		$indexFilepath = $this->baseDirectory . '/index.xml';
-		$this->index = new Index($indexFilepath);
+        $indexFilepath = $this->baseDirectory . '/index.xml';
+        $this->index = new Index($indexFilepath);
 
-		$this->urlManager = Yii::$app->urlManager;
-		$this->urlManager->setScriptUrl('/frontend/web/index.php');
-		$this->urlManager->setHostInfo($this->siteUrl);
+        $siteUrl = Yii::$app->settings->get('site_url');
+        $this->urlManager = Yii::$app->urlManager;
+        $this->urlManager->setScriptUrl('/frontend/web/index.php');
+        $this->urlManager->setHostInfo($siteUrl);
 
     }
 
@@ -47,64 +48,64 @@ class SitemapBuilder extends \yii\base\Object
 
     private function build()
     {
-		if (Yii::$app->hasModule('videos')) {
-			$this->addCategories();
-			$this->addVideos();
-		}
+        if (Yii::$app->hasModule('videos')) {
+            $this->addCategories();
+            $this->addVideos();
+        }
 
-		$this->index->write();
-	}
+        $this->index->write();
+    }
 
-	private function addCategories()
-	{
-		$filepath = $this->baseDirectory . '/videos_categories.xml';
-		$sitemap = new Sitemap($filepath);
+    private function addCategories()
+    {
+        $filepath = $this->baseDirectory . '/videos_categories.xml';
+        $sitemap = new Sitemap($filepath);
 
-		$models = \ytubes\admin\videos\models\VideosCategories::find()
-			->select(['category_id', 'slug', 'updated_at']);
+        $models = \ytubes\admin\videos\models\VideosCategories::find()
+            ->select(['category_id', 'slug', 'updated_at']);
 
-		foreach ($models->batch(1000) as $categories) {
-			foreach ($categories as $category) {
-				$sitemap->addItem($this->urlManager->createAbsoluteUrl(['video/category', 'slug' => $category->slug]), strtotime($category->updated_at), Sitemap::DAILY, 0.7);
-			}
-		}
+        foreach ($models->batch(1000) as $categories) {
+            foreach ($categories as $category) {
+                $sitemap->addItem($this->urlManager->createAbsoluteUrl(['video/category', 'slug' => $category->slug]), strtotime($category->updated_at), Sitemap::DAILY, 0.7);
+            }
+        }
 
-		$sitemap->write();
+        $sitemap->write();
 
-		$sitemapFileUrls = $sitemap->getSitemapUrls($this->siteUrl);
-		$this->addSitemapToIndex($sitemapFileUrls);
-	}
+        $sitemapFileUrls = $sitemap->getSitemapUrls($this->baseSitemapUrl);
+        $this->addSitemapToIndex($sitemapFileUrls);
+    }
 
-	private function addVideos()
-	{
-		$filepath = $this->baseDirectory . '/videos.xml';
-		$sitemap = new Sitemap($filepath);
+    private function addVideos()
+    {
+        $filepath = $this->baseDirectory . '/videos.xml';
+        $sitemap = new Sitemap($filepath);
 
-		$models = \ytubes\admin\videos\models\Videos::find()
-			->select(['video_id', 'slug', 'published_at'])
-			->where(['status' => 10])
-			->orderBy(['published_at' => SORT_DESC]);
+        $models = \ytubes\admin\videos\models\Videos::find()
+            ->select(['video_id', 'slug', 'published_at'])
+            ->where(['status' => 10])
+            ->orderBy(['published_at' => SORT_DESC]);
 
-		foreach ($models->batch(1000) as $videos) {
-			foreach ($videos as $video) {
-				$sitemap->addItem($this->urlManager->createAbsoluteUrl(['video/view', 'slug' => $video->slug]), strtotime($video->published_at), Sitemap::DAILY, 0.5);
-			}
-		}
+        foreach ($models->batch(1000) as $videos) {
+            foreach ($videos as $video) {
+                $sitemap->addItem($this->urlManager->createAbsoluteUrl(['video/view', 'slug' => $video->slug]), strtotime($video->published_at), Sitemap::DAILY, 0.5);
+            }
+        }
 
-		$sitemap->write();
+        $sitemap->write();
 
-		$sitemapFileUrls = $sitemap->getSitemapUrls($this->siteUrl);
-		$this->addSitemapToIndex($sitemapFileUrls);
-	}
+        $sitemapFileUrls = $sitemap->getSitemapUrls($this->baseSitemapUrl);
+        $this->addSitemapToIndex($sitemapFileUrls);
+    }
 
-	private function addSitemapToIndex($sitemapFileUrls)
-	{
-		if (empty($sitemapFileUrls))
-			return;
+    private function addSitemapToIndex($sitemapFileUrls)
+    {
+        if (empty($sitemapFileUrls))
+            return;
 
-		foreach ($sitemapFileUrls as $sitemapUrl) {
-		    $this->index->addSitemap($sitemapUrl);
-		}
+        foreach ($sitemapFileUrls as $sitemapUrl) {
+            $this->index->addSitemap($sitemapUrl);
+        }
 
-	}
+    }
 }
