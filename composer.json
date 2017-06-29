@@ -1,5 +1,5 @@
 {
-    "name": "ytubes/ytubes-core",
+    "name": "ytubes/core",
     "description": "Базовое расширение",
     "require": {
         "php": "^5.6 || ^7.0",
