@@ -20,15 +20,15 @@ class m170629_023626_add_visitors extends Migration
                 'first_visit' => 'timestamp NULL DEFAULT NULL',
                 'last_visit' => 'timestamp NULL DEFAULT NULL',
                 'time_diff' => 'smallint(5) unsigned NOT NULL DEFAULT 0',
-                'views' => 'smallint(5) unsigned NOT NULL DEFAULT 0',
-                'clicks' => 'smallint(5) unsigned NOT NULL DEFAULT 0',
+                'raw_in' => 'tinyint(3) unsigned NOT NULL DEFAULT 0',
+                'views' => 'tinyint(3) unsigned NOT NULL DEFAULT 0',
+                'clicks' => 'tinyint(3)) unsigned NOT NULL DEFAULT 0',
                 'ref_site' => 'varchar(255) NOT NULL DEFAULT \'\'',
                 'ref_type' => "enum('se', 'bookmark', 'internal', 'links', 'other') DEFAULT NULL",
                 'device_type' => "enum('desktop', 'tablet', 'mobile') DEFAULT NULL",
             ], $tableOptions);
 
-            $this->addPrimaryKey('ip', $tableName, 'ip');
-            $this->createIndex('first_visit', $tableName, 'first_visit');
+            $this->createIndex('ip', $tableName, ['ip', 'first_visit']);
 
             $tableName = 'cron_jobs';
             $tableSchema = \Yii::$app->db->schema->getTableSchema($tableName);
