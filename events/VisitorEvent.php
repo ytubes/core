@@ -61,7 +61,7 @@ class VisitorEvent extends \yii\base\Object
 			$sql = "
 				UPDATE `visitors`
 				SET `last_visit`='{$visitTime}', `session_time`=TIMESTAMPDIFF(SECOND,`first_visit`,`last_visit`), `raw_in`=`raw_in`+{$raw_in}, `views`=`views`+1
-				WHERE `ip`='{$ip}' AND `first_visit`>TIMESTAMP('{$timestamp}')";
+				WHERE `ip`='{$ip}' AND `first_visit`=TIMESTAMP('{$timestamp}')";
 			Yii::$app->db->createCommand($sql)
 				->execute();
 		}
@@ -123,7 +123,7 @@ class VisitorEvent extends \yii\base\Object
 			$sql = "
 				UPDATE `visitors`
 				SET `last_visit`='{$visitTime}', `session_time`=TIMESTAMPDIFF(SECOND,`first_visit`,`last_visit`), `raw_in`=`raw_in`+{$raw_in}, `views`=`views`+1, `clicks`=`clicks`+{$click}
-				WHERE `ip`='{$ip}' AND `first_visit`>TIMESTAMP('{$timestamp}')";
+				WHERE `ip`='{$ip}' AND `first_visit`=TIMESTAMP('{$timestamp}')";
 			Yii::$app->db->createCommand($sql)
 				->execute();
 		}
