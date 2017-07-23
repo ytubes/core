@@ -13,7 +13,7 @@ use samdark\sitemap\Index;
 /**
  * https://github.com/samdark/sitemap
  */
-class SitemapBuilder extends \yii\base\Object
+class SitemapBuilder
 {
     private $urlManager;
     private $index;
