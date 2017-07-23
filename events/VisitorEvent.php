@@ -30,6 +30,16 @@ class VisitorEvent extends \yii\base\Object
 				// Если с момента последнего визита прошло более чем полчаса, то будем считать новый уник.
 			if ($lastVisit < $limitAgo) {
 				$firstVisit = true;
+				// Если с момента последнего клика прошло меньше 10 секунд, значит это бот
+			} else {
+				$lastClick = $session->get('last_click', false);
+				$lastClick = (new \DateTime($lastClick));
+				$fastClick = (new \DateTime())
+					->sub(new \DateInterval('PT3S'));
+
+				if ($lastClick !== false && $lastClick > $fastClick) {
+					return;
+				}
 			}
 		}
 
@@ -65,6 +75,8 @@ class VisitorEvent extends \yii\base\Object
 			Yii::$app->db->createCommand($sql)
 				->execute();
 		}
+
+		$session->set('last_click', $visitTime);
 	}
 
     public static function onClick($event)
@@ -89,6 +101,15 @@ class VisitorEvent extends \yii\base\Object
 				// Если с момента последнего визита прошло более чем полчаса, то будем считать новый уник.
 			if ($lastVisit < $limitAgo) {
 				$firstVisit = true;
+			} else {
+				$lastClick = $session->get('last_click', false);
+				$lastClick = (new \DateTime($lastClick));
+				$fastClick = (new \DateTime())
+					->sub(new \DateInterval('PT3S'));
+
+				if ($lastClick !== false && $lastClick > $fastClick) {
+					return;
+				}
 			}
 		}
 
@@ -128,19 +149,6 @@ class VisitorEvent extends \yii\base\Object
 				->execute();
 		}
 
-		//$first_visit = $last_visit = gmdate('Y:m:d H:i:s');
-
-
-		/*$ref_group = Visitor::getRefererType();
-		$device_group = Visitor::getDeviceType();
-		$ref_site = Visitor::getRefererHost();
-
-		$sql = "
-			INSERT INTO `visitors` (`ip`, `first_visit`, `last_visit`, `session_time`, `views`, `ref_site`, `ref_group`, `device_group`)
-			VALUES ('{$ip}', '{$first_visit}', NULL, 0, 1, '{$ref_site}', '{$ref_group}', '{$device_group}')
-			ON DUPLICATE KEY UPDATE
-				`last_visit`='{$last_visit}', `session_time`=TIMESTAMPDIFF(SECOND,`first_visit`,`last_visit`), `views`=`views`+1";
-		Yii::$app->db->createCommand($sql)
-			->execute();*/
+		$session->set('last_click', $visitTime);
     }
 }

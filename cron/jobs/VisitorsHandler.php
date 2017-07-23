@@ -6,6 +6,8 @@ use yii\db\Expression;
 use yii\base\Model;
 use yii\helpers\Url;
 use yii\helpers\FileHelper;
+use ytubes\models\Visitor;
+use yii\support\facades\Db;
 
 /**
  * https://github.com/samdark/sitemap
@@ -21,12 +23,12 @@ class VisitorsHandler extends \yii\base\Object
     private function delete24HourOld()
     {
 			// -24 часа от текущего момента. в UTC формате
-		$date_utc = new \DateTime('NOW', new \DateTimeZone('UTC'));
-		$date_utc->sub(new \DateInterval('P1D'));
-		$last_day = $date_utc->format('Y-m-d H:i:s');
+		$last_day = (new \DateTime('NOW'))
+			->sub(new \DateInterval('P1D'))
+			->format('Y-m-d H:i:s');
 
-		Yii::$app->db->createCommand()
-			->delete('visitors', 'first_visit<TIMESTAMP(:last_day)')
+		Db::createCommand()
+			->delete(Visitor::tableName(), 'first_visit<TIMESTAMP(:last_day)')
 			->bindValue(':last_day', $last_day)
 			->execute();
     }

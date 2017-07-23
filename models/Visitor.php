@@ -19,6 +19,40 @@ use Yii;
  */
 class Visitor extends \yii\db\ActiveRecord
 {
+    public $visitNum;
+
+    /**
+     * @var const группы устройств
+     */
+    const DEVICE_DESKTOP = 'desktop';
+    const DEVICE_MOBILE = 'mobile';
+
+    /**
+     * @var const группы реферов
+     */
+    const REF_GROUP_SE = 'se';
+    const REF_GROUP_BOOKMARK = 'bookmark';
+    const REF_GROUP_LINKS = 'links';
+    const REF_GROUP_INTERNAL = 'internal';
+
+    /**
+     * @var string[]
+     */
+    private static $deviceGroups = [
+        self::DEVICE_DESKTOP,
+        self::DEVICE_MOBILE,
+    ];
+
+    /**
+     * @var string[]
+     */
+    private static $refererGroups = [
+        self::REF_GROUP_SE,
+        self::REF_GROUP_BOOKMARK,
+        self::REF_GROUP_LINKS,
+        self::REF_GROUP_INTERNAL,
+    ];
+
     /**
      * @inheritdoc
      */
@@ -63,38 +97,54 @@ class Visitor extends \yii\db\ActiveRecord
 
     public static function findByIp($ip)
     {
-    	$packedIp = inet_pton($ip);
+        $packedIp = inet_pton($ip);
 
-    	return self::find()
-    		->where(['ip' => $packedIp])
-    		->all();
+        return self::find()
+            ->where(['ip' => $packedIp])
+            ->all();
     }
 
-	/**
-	 * После поиска автоматически преобразует IP пользователя в читаемый формат.
-	 */
-	public function afterFind()
-	{
-	     $ip = @inet_ntop($this->ip);
+    /**
+     * После поиска автоматически преобразует IP пользователя в читаемый формат.
+     */
+    public function afterFind()
+    {
+         $ip = @inet_ntop($this->ip);
 
-	     if (false !== $ip) {
-	     	$this->ip = $ip;
-	     }
+         if (false !== $ip) {
+             $this->ip = $ip;
+         }
 
-	    return parent::afterFind();
-	}
+        return parent::afterFind();
+    }
 
-	/**
-	 * Перед записью в базу автоматически конвертирует IP адрес пользователя в упакованное in_addr представление
-	 */
-	public function beforeSave($insert)
-	{
-	    if (!parent::beforeSave($insert)) {
-	        return false;
-	    }
+    /**
+     * Перед записью в базу автоматически конвертирует IP адрес пользователя в упакованное in_addr представление
+     */
+    public function beforeSave($insert)
+    {
+        if (!parent::beforeSave($insert)) {
+            return false;
+        }
 
-	    $this->ip = inet_pton($this->ip);
+        $this->ip = inet_pton($this->ip);
 
-	    return true;
-	}
+        return true;
+    }
+
+    /**
+     * @return array
+     */
+    public static function getDeviceGroups()
+    {
+        return self::$deviceGroups;
+    }
+
+    /**
+     * @return array
+     */
+    public static function getRefererGroups()
+    {
+        return self::$refererGroups;
+    }
 }
