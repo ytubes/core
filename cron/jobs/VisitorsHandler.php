@@ -7,12 +7,11 @@ use yii\base\Model;
 use yii\helpers\Url;
 use yii\helpers\FileHelper;
 use ytubes\models\Visitor;
-use yii\support\facades\Db;
 
 /**
- * https://github.com/samdark/sitemap
+ * Очищение статы пользователей более чем за сутки
  */
-class VisitorsHandler extends \yii\base\Object
+class VisitorsHandler
 {
 
     public function handle()
@@ -22,14 +21,14 @@ class VisitorsHandler extends \yii\base\Object
 
     private function delete24HourOld()
     {
-			// -24 часа от текущего момента. в UTC формате
-		$last_day = (new \DateTime('NOW'))
-			->sub(new \DateInterval('P1D'))
-			->format('Y-m-d H:i:s');
+            // -24 часа от текущего момента.
+        $last_day = (new \DateTime('NOW'))
+            ->sub(new \DateInterval('P1D'))
+            ->format('Y-m-d H:i:s');
 
-		Db::createCommand()
-			->delete(Visitor::tableName(), 'first_visit<TIMESTAMP(:last_day)')
-			->bindValue(':last_day', $last_day)
-			->execute();
+        Yii::$app->db->createCommand()
+            ->delete(Visitor::tableName(), 'first_visit<TIMESTAMP(:last_day)')
+            ->bindValue(':last_day', $last_day)
+            ->execute();
     }
 }
