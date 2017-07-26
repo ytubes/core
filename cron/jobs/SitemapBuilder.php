@@ -59,7 +59,7 @@ class SitemapBuilder
 		$filepath = $this->baseDirectory . '/videos_categories.xml';
 		$sitemap = new Sitemap($filepath);
 
-		$models = \ytubes\admin\videos\models\VideosCategories::find()
+		$models = \ytubes\videos\models\Category::find()
 			->select(['category_id', 'slug', 'updated_at']);
 
 		foreach ($models->batch(1000) as $categories) {
@@ -79,7 +79,7 @@ class SitemapBuilder
 		$filepath = $this->baseDirectory . '/videos.xml';
 		$sitemap = new Sitemap($filepath);
 
-		$models = \ytubes\admin\videos\models\Videos::find()
+		$models = \ytubes\videos\models\Video::find()
 			->select(['video_id', 'slug', 'published_at'])
 			->where(['status' => 10])
 			->orderBy(['published_at' => SORT_DESC]);
