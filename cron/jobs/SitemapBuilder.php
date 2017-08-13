@@ -86,7 +86,7 @@ class SitemapBuilder
 
         foreach ($models->batch(1000) as $videos) {
             foreach ($videos as $video) {
-                $sitemap->addItem($this->urlManager->createAbsoluteUrl(['/video/view/index', 'slug' => $video->slug]), strtotime($video->published_at), Sitemap::DAILY, 0.5);
+                $sitemap->addItem($this->urlManager->createAbsoluteUrl(['/videos/view/index', 'slug' => $video->slug]), strtotime($video->published_at), Sitemap::DAILY, 0.5);
             }
         }
 
@@ -104,6 +104,5 @@ class SitemapBuilder
         foreach ($sitemapFileUrls as $sitemapUrl) {
             $this->index->addSitemap($sitemapUrl);
         }
-
     }
 }
