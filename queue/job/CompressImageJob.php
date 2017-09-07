@@ -24,12 +24,19 @@ class CompressImageJob extends Object implements Job
         	FileHelper::createDirectory($destinationDirectory, 0755);
         }
 
-		$compressor = new ImageCompressor('guetzli');
-		$compressor
-		    ->setOriginalFile($originalFile)
-		    ->setDestination($this->outFilepath)
-		    ->setQuality(90)
-		    ->compress();
+		try {
+			$driver = new \ImageCompressor\Driver\Guetzli('/usr/sbin/guetzli');
+
+			$compressor = new ImageCompressor($driver);
+			$compressor
+			    ->setOriginalFile($originalFile)
+			    ->setDestination($this->outFilepath)
+			    ->setQuality(90)
+			    ->compress();
+		} catch (\Exception $e) {
+			$logPath = Yii::getAlias('@runtime/logs/queue.log');
+			file_put_contents($logPath, $e->getMessage(), FILE_APPEND | LOCK_EX);
+		}
     }
 
     /**
