@@ -1,6 +1,6 @@
 {
     "name": "ytubes/core",
-    "description": "Базовое расширение",
+    "description": "Base extension",
     "require": {
         "php": "^5.6 || ^7.0",
         "yiisoft/yii2": "~2.0.9",
